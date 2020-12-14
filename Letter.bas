@@ -271,7 +271,6 @@ Sub ProcessLetter() 'Iterate through letter and add the client(s) name(s) and ad
     fndDate = False
     fndDear = False
     fndTarget = False
-    fndRMD = False
     fndInsert = False
     fndClosing = False
     fndRegards = False
@@ -333,13 +332,6 @@ Sub ProcessLetter() 'Iterate through letter and add the client(s) name(s) and ad
                     .Words(wrd) = Replace(.Words(wrd), "BUYSELLTARGET", bstStr)
                 End If
                 fndTarget = True
-            ElseIf Not fndRMD And currentWord = "RMDLOC" Then
-                If buttonSheet.Shapes("cbxRMD").OLEFormat.Object.Object.Value = True Then
-                    'There's at least one RMD. Put in the proper wording here
-                Else
-                    'There's no RMD. Take out the placeholder
-                    .Words(wrd) = Replace(.Words(wrd), "RMDLOC", "")
-                End If
             ElseIf Not fndInsert And currentWord = "INSERT" Then
                 fndInsert = True
                 
@@ -369,34 +361,6 @@ Sub ProcessLetter() 'Iterate through letter and add the client(s) name(s) and ad
                 
                     .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 1).Range.End).Font.Size = 12
                     .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 1).Range.End).Font.Italic = False
-'                ElseIf buttonSheet.Shapes("rdoRMD").OLEFormat.Object.Object.Value Then
-'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc).Range)
-'                    insert = "We closely monitor stimulus programs from the Government due to the COVID-19 situation.  " _
-'                    & "This has included stimulus checks to taxpayers, suspension of required minimum distributions for those age 70 ½ or 72, postponement of taxes payments, etc.  " _
-'                    & "Since this situation is very fluid, information is changing and being released very quickly.  " _
-'                    & "There is a lot of detail to the recent legislation and we are working on unpacking and understanding this information so that we can be a resource for you.  " _
-'                    & "For now, we'd like to share with you some resources for you to answer any immediate questions that you may have about the CARES Act, including the Economic Impact Payment:"
-'                    paragraph.Range.Text = insert & vbCr
-'
-'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc + 1).Range)
-'                    insert = "irs.gov/coronavirus"
-'                    paragraph.Range.Text = insert & vbCr
-'
-'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc + 2).Range)
-'                    insert = "sba.gov"
-'                    paragraph.Range.Text = insert & vbCr
-'
-'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc + 3).Range)
-'                    insert = "We don't always know the details behind every program within a stimulus bill, but we will work diligently in researching this information as is becomes official and available."
-'                    paragraph.Range.Text = insert & vbCr
-'
-'                    .Range(.Paragraphs(insertLoc + 1).Range.Start, .Paragraphs(insertLoc + 2).Range.End).ListFormat.ApplyListTemplateWithLevel ListTemplate:= _
-'                    WordApp.ListGalleries(wdBulletGallery).ListTemplates(1), ContinuePreviousList:= _
-'                    False, ApplyTo:=wdListApplyToWholeList, DefaultListBehavior:= _
-'                    wdWord10ListBehavior
-'
-'                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 3).Range.End).Font.Size = 12
-'                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 3).Range.End).Font.Italic = False
                 End If
             ElseIf Not fndClosing And currentWord = "CLOSING" Then
                 fndClosing = True
