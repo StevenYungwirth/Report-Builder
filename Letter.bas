@@ -13,10 +13,10 @@ Private adv2Last As String
 Sub BuildLetter(Optional bothClicked As Boolean)
     'Add check: if there's an RMD and it's the months we add RMD stuff, have a message box saying to add something to the letter; don't print the letter
     'Set global variables
-    Both.UpdateScreen "Off"
+    ReportAndLetter.UpdateScreen "Off"
     'On Error GoTo MacroBroke
     If Not bothClicked Then
-        Both.SetGlobals
+        ReportAndLetter.SetGlobals
     End If
     SetLetterGlobals
     
@@ -34,9 +34,9 @@ Sub BuildLetter(Optional bothClicked As Boolean)
     
     ResetLetterGlobals
     If Not bothClicked Then
-        Both.ResetGlobals
+        ReportAndLetter.ResetGlobals
     End If
-    Both.UpdateScreen "On"
+    ReportAndLetter.UpdateScreen "On"
     Exit Sub
 MacroBroke:
     If Not WordDoc Is Nothing Then
@@ -45,12 +45,12 @@ MacroBroke:
     If Not WordApp Is Nothing Then
         WordApp.Quit
     End If
-    Both.UpdateScreen "On"
+    ReportAndLetter.UpdateScreen "On"
     MsgBox "Fatal error, macro has halted"
 End Sub
 Sub SetLetterGlobals()
     'Set the button's workbook and worksheet
-    Set buttonBook = Workbooks(Both.BookCheck("Report Builder"))
+    Set buttonBook = Workbooks(ReportAndLetter.BookCheck("Report Builder"))
     Set buttonSheet = buttonBook.Worksheets(1)
     
     'Find who's signing the letter
@@ -89,7 +89,7 @@ End If
 
 If adv1First = "" Then
     MsgBox "Please select at least one advisor to sign the letter"
-    Both.UpdateScreen "On"
+    ReportAndLetter.UpdateScreen "On"
     End
 End If
     
@@ -271,6 +271,7 @@ Sub ProcessLetter() 'Iterate through letter and add the client(s) name(s) and ad
     fndDate = False
     fndDear = False
     fndTarget = False
+    fndRMD = False
     fndInsert = False
     fndClosing = False
     fndRegards = False
@@ -332,6 +333,13 @@ Sub ProcessLetter() 'Iterate through letter and add the client(s) name(s) and ad
                     .Words(wrd) = Replace(.Words(wrd), "BUYSELLTARGET", bstStr)
                 End If
                 fndTarget = True
+            ElseIf Not fndRMD And currentWord = "RMDLOC" Then
+                If buttonSheet.Shapes("cbxRMD").OLEFormat.Object.Object.Value = True Then
+                    'There's at least one RMD. Put in the proper wording here
+                Else
+                    'There's no RMD. Take out the placeholder
+                    .Words(wrd) = Replace(.Words(wrd), "RMDLOC", "")
+                End If
             ElseIf Not fndInsert And currentWord = "INSERT" Then
                 fndInsert = True
                 
@@ -347,20 +355,50 @@ Sub ProcessLetter() 'Iterate through letter and add the client(s) name(s) and ad
                     & "We have done this in the past and found it to be effective."
                     
                     Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc).Range)
-                    paragraph.Range.Text = vbCr & insert & vbCr
+                    paragraph.Range.Text = insert & vbCr
                 
-                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 1).Range.End).Font.Size = 12
-                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 1).Range.End).Font.Italic = False
+                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc).Range.End).Font.Size = 12
+                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc).Range.End).Font.Italic = False
+                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc).Range.End).Font.Bold = False
                 ElseIf buttonSheet.Shapes("rdoWD").OLEFormat.Object.Object.Value Then
                     insert = "Since you are drawing on your investments regularly, we are going to configure our rebalancing efforts to adjust for future withdrawals (over the next 3-6 months).  " _
                     & "As you know, we use our most stable bond funds to accommodate withdrawals during market pull backs.  " _
                     & "If you want to make any changes to your withdrawals in the short-term, please let us know."
                     
                     Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc).Range)
-                    paragraph.Range.Text = vbCr & insert & vbCr
+                    paragraph.Range.Text = insert & vbCr
                 
-                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 1).Range.End).Font.Size = 12
-                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 1).Range.End).Font.Italic = False
+                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc).Range.End).Font.Size = 12
+                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc).Range.End).Font.Italic = False
+                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc).Range.End).Font.Bold = False
+'                ElseIf buttonSheet.Shapes("rdoRMD").OLEFormat.Object.Object.Value Then
+'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc).Range)
+'                    insert = "We closely monitor stimulus programs from the Government due to the COVID-19 situation.  " _
+'                    & "This has included stimulus checks to taxpayers, suspension of required minimum distributions for those age 70 ½ or 72, postponement of taxes payments, etc.  " _
+'                    & "Since this situation is very fluid, information is changing and being released very quickly.  " _
+'                    & "There is a lot of detail to the recent legislation and we are working on unpacking and understanding this information so that we can be a reExportSheet for you.  " _
+'                    & "For now, we'd like to share with you some reExportSheets for you to answer any immediate questions that you may have about the CARES Act, including the Economic Impact Payment:"
+'                    paragraph.Range.Text = insert & vbCr
+'
+'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc + 1).Range)
+'                    insert = "irs.gov/coronavirus"
+'                    paragraph.Range.Text = insert & vbCr
+'
+'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc + 2).Range)
+'                    insert = "sba.gov"
+'                    paragraph.Range.Text = insert & vbCr
+'
+'                    Set paragraph = .Paragraphs.Add(.Paragraphs(insertLoc + 3).Range)
+'                    insert = "We don't always know the details behind every program within a stimulus bill, but we will work diligently in researching this information as is becomes official and available."
+'                    paragraph.Range.Text = insert & vbCr
+'
+'                    .Range(.Paragraphs(insertLoc + 1).Range.Start, .Paragraphs(insertLoc + 2).Range.End).ListFormat.ApplyListTemplateWithLevel ListTemplate:= _
+'                    WordApp.ListGalleries(wdBulletGallery).ListTemplates(1), ContinuePreviousList:= _
+'                    False, ApplyTo:=wdListApplyToWholeList, DefaultListBehavior:= _
+'                    wdWord10ListBehavior
+'
+'                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 3).Range.End).Font.Size = 12
+'                    .Range(.Paragraphs(insertLoc).Range.Start, .Paragraphs(insertLoc + 3).Range.End).Font.Italic = False
                 End If
             ElseIf Not fndClosing And currentWord = "CLOSING" Then
                 fndClosing = True
@@ -431,10 +469,10 @@ Function BoughtSold() As Single
     total = 0
     
     'Get the headers needed
-    Dim subclass As Range
-    Dim trade As Range
-    Set subclass = Both.FindHeader("SubClass")
-    Set trade = Both.FindHeader("Trade")
+    Dim Subclass As Range
+    Dim Trade As Range
+    Set Subclass = ReportAndLetter.FindHeader("SubClass")
+    Set Trade = ReportAndLetter.FindHeader("Trade")
     
     'Look for these subclasses
     Dim fixedArray() As String
@@ -442,7 +480,7 @@ Function BoughtSold() As Single
     
     'Find the last row to see how many times to iterate
     Dim lastRow As Integer
-    lastRow = Source.UsedRange.Rows.count
+    lastRow = ExportSheet.UsedRange.Rows.count
     
     'Look through each transaction
     Dim trans As Integer
@@ -450,9 +488,9 @@ Function BoughtSold() As Single
     For trans = 1 To lastRow
         For index = 0 To UBound(fixedArray)
             'See if the transaction is fixed income or money market
-            If subclass.Offset(trans).Value2 = fixedArray(index) Then
+            If Subclass.Offset(trans).Value2 = fixedArray(index) Then
                 'The transaction is fixed income or money market, add the trade value to the total
-                total = total + trade.Offset(trans).Value2
+                total = total + Trade.Offset(trans).Value2
             End If
         Next index
     Next trans
