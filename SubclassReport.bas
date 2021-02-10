@@ -5,15 +5,15 @@ Private AccountList As Collection
 Private SubclassList As Collection
 Private PrintRange As Range
 
-Sub BuildSubclassReport(AccountList As Collection)
+Sub BuildSubclassReport()
     'Get the list of accounts
-    Set AccountList = Reports.AccountList
+    Set AccountList = BothButton.AccountList
     
     'Add each subclass that has trades
-    GenerateSubclassList AccountList
+    GenerateSubclassList
     
     'Create a new worksheet for the report after the client's trades worksheet
-    Set SCReport = ReportAndLetter.ClientBook.Worksheets.Add(Type:=xlWorksheet, After:=ClientBook.Worksheets(2))
+    Set SCReport = BothButton.ExportBook.Worksheets.Add(Type:=xlWorksheet, After:=BothButton.ExportBook.Worksheets(ExportBook.Worksheets.count))
     SCReport.Name = "Trades by Subclass"
     
     'For each subclass, put in the trades
@@ -23,7 +23,7 @@ Sub BuildSubclassReport(AccountList As Collection)
     FormatReport
 End Sub
 
-Sub GenerateSubclassList(AccountList As Collection)
+Sub GenerateSubclassList()
     'Initialize the subclass list to have every subclss
     InitializeSubclassList
     
@@ -67,7 +67,7 @@ Sub FillSubclassList(account As Variant)
     For Each acctFund In account.TradeList
         'Get the trade's subclass
         Dim acctFundSC As String
-        acctFundSC = acctFund.Subclass
+        acctFundSC = acctFund.subclass
         
         'Find the respective subclass in the list
         Dim listSubclass As Variant
@@ -93,6 +93,8 @@ Sub FillSubclassList(account As Variant)
                 'The security wasn't already in the list, add it
                 listSubclass.TradeList.Add acctFund
             End If
+            
+            isInList = False
         End If
     Next acctFund
 End Sub
@@ -107,8 +109,9 @@ Function GetSubclassFromList(sc As String) As clsSubclass
 End Function
 
 Sub FillReport()
+    
     'Start on the second row to have a small space between the header and content
-    Set PrintRange = SCReport.Range("A3")
+    Set PrintRange = SCReport.Range("A6")
     
     'For each subclass, if it has at least one trade, put it on the report
     Dim sc As Variant
@@ -160,12 +163,11 @@ Sub PutSubclassOnReport(sc As Variant)
     endPageBreaks = SCReport.HPageBreaks.count
     If startPageBreaks <> endPageBreaks Then
         'Add a page break before the subclass section
-        startRange.Offset(-1, 0).EntireRow.insert
-        SCReport.Rows(startRange.Offset(-2, 0).Row).PageBreak = xlPageBreakManual
+        SCReport.Rows(startRange.Offset(-1, 0).Row).PageBreak = xlPageBreakManual
         
         'Put a border at the top between the header and the content
-        Range(startRange, startRange.Offset(-2, 5)).Borders(xlEdgeTop).LineStyle = xlContinuous
-        Range(startRange, startRange.Offset(-2, 5)).Borders(xlEdgeTop).Weight = xlMedium
+        SCReport.Range(startRange, startRange.Offset(-1, 5)).Borders(xlEdgeTop).LineStyle = xlContinuous
+        SCReport.Range(startRange, startRange.Offset(-1, 5)).Borders(xlEdgeTop).Weight = xlMedium
     End If
 End Sub
 
@@ -189,11 +191,11 @@ Sub FormatReport()
     'Change the column sizes
     SCReport.Columns(1).ColumnWidth = 45
     SCReport.Columns(2).ColumnWidth = 13
-    SCReport.Columns(3).ColumnWidth = 13
-    SCReport.Columns(4).ColumnWidth = 8
-    SCReport.Columns(5).ColumnWidth = 7
-    SCReport.Columns(6).ColumnWidth = 7
+    SCReport.Columns(3).ColumnWidth = 15
+    SCReport.Columns(4).ColumnWidth = 13
+    SCReport.Columns(5).ColumnWidth = 4
+    SCReport.Columns(6).ColumnWidth = 3
     
     'Format the header, footer, and print area
-    Reports.FormatClientSheet SCReport
+    ReportsButton.FormatClientSheet SCReport
 End Sub
