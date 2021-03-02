@@ -1,16 +1,16 @@
 Attribute VB_Name = "ErrorHandling"
 Option Explicit
 
-Sub ErrorAndContinue(Optional message As String, Optional msgBoxTitle As String)
+Sub ErrorAndContinue(Optional message As String, Optional msgBoxTitle As String, Optional hhName As String)
     'Minor error. Show message and keep running macro
     ShowError message, msgBoxTitle
-    LogData.LogError 1
+    LogData.LogError 1, hhName
 End Sub
-Sub ErrorAndStop(Optional message As String, Optional msgBoxTitle As String)
+Sub ErrorAndStop(Optional message As String, Optional msgBoxTitle As String, Optional hhName As String)
     'Fatal error. Show message and stop the macro
     ShowError message, msgBoxTitle
     BothButton.UpdateScreen "On"
-    LogData.LogError 2
+    LogData.LogError 2, hhName
     LogData.TimeEnd
     End
 End Sub
@@ -25,12 +25,9 @@ Private Sub ShowError(message As String, msgBoxTitle As String)
     LogData.TimeEnd
     
     'Show the error message
-    If msgBoxTitle = vbNullString Then
-        MsgBox message
-    Else
-        MsgBox message, Title:=msgBoxTitle
-    End If
+    MsgBox message, Title:=msgBoxTitle
     
     'Restart the timer once the message box is closed
     LogData.TimeStart
 End Sub
+
